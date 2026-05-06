@@ -77,7 +77,7 @@ namespace CalculatorApp.Tests
             string expression = "5/0";
 
             // Act & Assert
-            Assert.Throws<ExpressionEvaluationException>(() => _parser.Evaluate(expression));
+            Assert.Throws<DivisionByZeroException>(() => _parser.Evaluate(expression));
         }
 
         [Fact]
