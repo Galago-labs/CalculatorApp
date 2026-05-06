@@ -179,8 +179,6 @@ namespace CalculatorApp
             }
         }
 
-
-
         private void ToggleSign_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button)
@@ -331,38 +329,6 @@ namespace CalculatorApp
 
             switch (e.Key)
             {
-        }
-
-        #region IDisposable Implementation
-        
-        private bool _disposed = false;
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    // Освобождаем управляемые ресурсы
-                    if (_expressionParser.IsValueCreated)
-                        _expressionParser.Value.Dispose();
-                    if (_calculatorState.IsValueCreated)
-                        _calculatorState.Value.Dispose();
-                }
-
-                // Освобождаем неуправляемые ресурсы (если есть)
-
-                _disposed = true;
-            }
-        }
-
-        #endregion
                 case Key.Enter:
                     Equals_Click(null, null);
                     e.Handled = true;
@@ -506,5 +472,36 @@ namespace CalculatorApp
                     break;
             }
         }
+
+        #region IDisposable Implementation
+        
+        private bool _disposed = false;
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // Освобождаем управляемые ресурсы
+                    if (_expressionParser.IsValueCreated)
+                        _expressionParser.Value.Dispose();
+                    if (_calculatorState.IsValueCreated)
+                        _calculatorState.Value.Dispose();
+                }
+
+                // Освобождаем неуправляемые ресурсы (если есть)
+
+                _disposed = true;
+            }
+        }
+
+        #endregion
     }
 }
