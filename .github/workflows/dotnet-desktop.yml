@@ -23,17 +23,17 @@ jobs:
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 6.0.x # Убедитесь, что ваш проект использует .NET 8
+        dotnet-version: 8.0.x # Убедитесь, что ваш проект использует .NET 8
 
     - name: Restore Dependencies
-      run: dotnet restore CalculatorApp/CalculatorApp.csproj
+      run: dotnet restore CalculatorApp.sln
 
     - name: Publish Single File EXE
       # Galago-labs: Собираем портативную версию
       # -p:PublishSingleFile=true — всё упаковывается в один файл
       # --self-contained true — .NET Runtime будет внутри EXE
       run: |
-        dotnet publish CalculatorApp/CalculatorApp.csproj `
+        dotnet publish CalculatorApp.sln `
           -c Release `
           -r win-x64 `
           --self-contained true `
@@ -45,5 +45,5 @@ jobs:
     - name: Upload Portable Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: GalagoLabs-Calculator-P2026
+        name: Calculator-Portable-GalagoLabs-2026
         path: ./publish/*.exe
