@@ -26,14 +26,14 @@ jobs:
         dotnet-version: 8.0.x # Убедитесь, что ваш проект использует .NET 8
 
     - name: Restore Dependencies
-      run: dotnet restore CalculatorApp.sln
+      run: dotnet restore CalculatorApp/CalculatorApp.csproj
 
     - name: Publish Single File EXE
       # Galago-labs: Собираем портативную версию
       # -p:PublishSingleFile=true — всё упаковывается в один файл
       # --self-contained true — .NET Runtime будет внутри EXE
       run: |
-        dotnet publish CalculatorApp.sln `
+        dotnet publish CalculatorApp/CalculatorApp.csproj `
           -c Release `
           -r win-x64 `
           --self-contained true `
@@ -45,5 +45,5 @@ jobs:
     - name: Upload Portable Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Calculator-Portable-GalagoLabs-2026
+        name: GalagoLabs-Calculator-P2026
         path: ./publish/*.exe
