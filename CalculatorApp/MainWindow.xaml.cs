@@ -49,8 +49,6 @@ namespace CalculatorApp
             if (!CalculatorConfiguration.Instance.EnableAnimations)
                 return;
 
-            // Reuse static animations to reduce memory allocations
-            // Apply the animation to the button's render transform
             var transform = button.RenderTransform as ScaleTransform;
             if (transform == null)
             {
@@ -67,17 +65,18 @@ namespace CalculatorApp
         {
             InitializeComponent();
             ResultBox.Text = "0";
-            UpdateMemoryIndicator(); // Initialize memory indicator
+            UpdateMemoryIndicator();
         }
 
-        private void Append_Click(object sender, RoutedEventArgs e)
+        private void Append_Click(object sender, RoutedEventArgs? e)
         {
-            Button button = (Button)sender;
+            Button? button = sender as Button;
+            if (button == null) return;
+            
             AnimateButtonPress(button);
             
-            string content = button.Content.ToString();
+            string content = button.Content.ToString() ?? "";
 
-            // Convert symbols to operators for calculation
             string displayValue = content;
             string calcValue = content;
 
@@ -105,7 +104,6 @@ namespace CalculatorApp
                     break;
             }
 
-            // Проверяем, является ли вводимый символ оператором (и display, и calc-символы)
             bool isAnyOperator = content switch
             {
                 "+" or "-" or "×" or "÷" or "√" or "^" or "*" or "/" => true,
@@ -116,7 +114,6 @@ namespace CalculatorApp
             {
                 if (isAnyOperator)
                 {
-                    // If starting with an operator, prepend the current value
                     if (ResultBox.Text != "0")
                     {
                         _lastOperation = ResultBox.Text + calcValue;
@@ -135,10 +132,8 @@ namespace CalculatorApp
             }
             else
             {
-                // Prevent multiple decimal points in a number
                 if (content == ".")
                 {
-                    // Проверяем последнее число в _lastOperation (используем calc-символы)
                     string[] parts = _lastOperation.Split(new char[] { '+', '-', '*', '/', '√', '^' });
                     string lastPart = parts.Length > 0 ? parts[parts.Length - 1] : "";
                     if (lastPart.Contains("."))
@@ -151,7 +146,7 @@ namespace CalculatorApp
             _lastOperation += calcValue;
         }
 
-        private void Clear_Click(object sender, RoutedEventArgs e)
+        private void Clear_Click(object sender, RoutedEventArgs? e)
         {
             if (sender is Button button)
                 AnimateButtonPress(button);
@@ -162,7 +157,7 @@ namespace CalculatorApp
             _calculatorState.Value.ClearHistory();
         }
 
-        private void Backspace_Click(object sender, RoutedEventArgs e)
+        private void Backspace_Click(object sender, RoutedEventArgs? e)
         {
             if (sender is Button button)
                 AnimateButtonPress(button);
@@ -175,20 +170,16 @@ namespace CalculatorApp
                 return;
             }
 
-            // Удаляем последний символ с дисплея
             string displayText = ResultBox.Text;
             ResultBox.Text = displayText.Substring(0, displayText.Length - 1);
 
-            // Синхронизируем _lastOperation
             if (_lastOperation.Length > 0)
             {
                 _lastOperation = _lastOperation.Substring(0, _lastOperation.Length - 1);
             }
         }
 
-
-
-        private void ToggleSign_Click(object sender, RoutedEventArgs e)
+        private void ToggleSign_Click(object sender, RoutedEventArgs? e)
         {
             if (sender is Button button)
                 AnimateButtonPress(button);
@@ -198,10 +189,8 @@ namespace CalculatorApp
                 if (ResultBox.Text.StartsWith("-"))
                 {
                     ResultBox.Text = ResultBox.Text.Substring(1);
-                    // Синхронизируем _lastOperation: убираем "-" из последнего числа
                     if (_lastOperation.Length > 0)
                     {
-                        // Находим последний оператор в _lastOperation
                         int lastOpIndex = _lastOperation.LastIndexOfAny(new char[] { '+', '-', '*', '/', '√', '^' });
                         string before = lastOpIndex >= 0 ? _lastOperation.Substring(0, lastOpIndex + 1) : "";
                         string lastNum = lastOpIndex >= 0 ? _lastOperation.Substring(lastOpIndex + 1) : _lastOperation;
@@ -214,7 +203,6 @@ namespace CalculatorApp
                 else
                 {
                     ResultBox.Text = "-" + ResultBox.Text;
-                    // Синхронизируем _lastOperation: добавляем "-" к последнему числу
                     if (_lastOperation.Length > 0)
                     {
                         int lastOpIndex = _lastOperation.LastIndexOfAny(new char[] { '+', '-', '*', '/', '√', '^' });
@@ -230,25 +218,20 @@ namespace CalculatorApp
             }
         }
 
-        private void Equals_Click(object sender, RoutedEventArgs e)
+        private void Equals_Click(object sender, RoutedEventArgs? e)
         {
             if (sender is Button button)
                 AnimateButtonPress(button);
 
             try
             {
-                // Show computing feedback
                 AnimateComputingFeedback();
 
                 if (!string.IsNullOrEmpty(_lastOperation))
                 {
-                    // Use the expression parser for all calculations
                     double result = _expressionParser.Value.Evaluate(_lastOperation);
-                    
-                    // Format the result with improved formatting
                     string formattedResult = FormatResult(result);
                     
-                    // Save to history
                     _calculatorState.Value.AddToHistory($"{_lastOperation} = {formattedResult}");
                     
                     ResultBox.Text = formattedResult;
@@ -321,17 +304,14 @@ namespace CalculatorApp
 
         private void UpdateMemoryIndicator()
         {
-            // Show memory indicator if memory has a non-zero value
             MemoryIndicator.Visibility = _calculatorState.Value.MemoryValue != 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void AnimateComputingFeedback()
         {
-            // Check if animations are enabled
             if (!CalculatorConfiguration.Instance.EnableAnimations)
                 return;
 
-            // Reuse static animation to reduce memory allocations
             ResultBox.BeginAnimation(UIElement.OpacityProperty, _computingOpacityAnimation);
         }
 
@@ -346,7 +326,6 @@ namespace CalculatorApp
 
             _calculatorState.Value.HistoryIndex += direction;
 
-            // Wrap around
             if (_calculatorState.Value.HistoryIndex < 0)
                 _calculatorState.Value.HistoryIndex = _calculatorState.Value.CalculationHistory.Count - 1;
             else if (_calculatorState.Value.HistoryIndex >= _calculatorState.Value.CalculationHistory.Count)
@@ -354,7 +333,6 @@ namespace CalculatorApp
 
             string historyEntry = _calculatorState.Value.CalculationHistory[_calculatorState.Value.HistoryIndex];
             
-            // Извлекаем выражение до " = " и обновляем _lastOperation
             int separatorIndex = historyEntry.LastIndexOf(" = ");
             if (separatorIndex > 0)
             {
@@ -400,13 +378,11 @@ namespace CalculatorApp
                 case Key.M:
                     if (e.KeyboardDevice.IsKeyDown(Key.LeftCtrl) || e.KeyboardDevice.IsKeyDown(Key.RightCtrl))
                     {
-                        // Ctrl+M - Memory Add
                         MemoryAdd();
                         e.Handled = true;
                     }
                     else if (e.KeyboardDevice.IsKeyDown(Key.LeftShift) || e.KeyboardDevice.IsKeyDown(Key.RightShift))
                     {
-                        // Shift+M - Memory Subtract
                         MemorySubtract();
                         e.Handled = true;
                     }
@@ -414,7 +390,6 @@ namespace CalculatorApp
                 case Key.R:
                     if (e.KeyboardDevice.IsKeyDown(Key.LeftCtrl) || e.KeyboardDevice.IsKeyDown(Key.RightCtrl))
                     {
-                        // Ctrl+R - Memory Recall
                         MemoryRecall();
                         e.Handled = true;
                     }
@@ -422,7 +397,6 @@ namespace CalculatorApp
                 case Key.L:
                     if (e.KeyboardDevice.IsKeyDown(Key.LeftCtrl) || e.KeyboardDevice.IsKeyDown(Key.RightCtrl))
                     {
-                        // Ctrl+L - Memory Clear
                         MemoryClear();
                         e.Handled = true;
                     }
@@ -454,12 +428,28 @@ namespace CalculatorApp
                     break;
                 case Key.D5:
                 case Key.NumPad5:
-                    Append_Click(new Button { Content = "5" }, null);
+                    if (e.KeyboardDevice.IsKeyDown(Key.LeftShift) || e.KeyboardDevice.IsKeyDown(Key.RightShift))
+                    {
+                        // Shift+5 = %
+                        Append_Click(new Button { Content = "%" }, null);
+                    }
+                    else
+                    {
+                        Append_Click(new Button { Content = "5" }, null);
+                    }
                     e.Handled = true;
                     break;
                 case Key.D6:
                 case Key.NumPad6:
-                    Append_Click(new Button { Content = "6" }, null);
+                    if (e.KeyboardDevice.IsKeyDown(Key.LeftShift) || e.KeyboardDevice.IsKeyDown(Key.RightShift))
+                    {
+                        // Shift+6 = ^
+                        Append_Click(new Button { Content = "^" }, null);
+                    }
+                    else
+                    {
+                        Append_Click(new Button { Content = "6" }, null);
+                    }
                     e.Handled = true;
                     break;
                 case Key.D7:
@@ -500,20 +490,6 @@ namespace CalculatorApp
                     Append_Click(new Button { Content = "÷" }, null);
                     e.Handled = true;
                     break;
-                case Key.D5:
-                    if (e.KeyboardDevice.IsKeyDown(Key.LeftShift) || e.KeyboardDevice.IsKeyDown(Key.RightShift))
-                    {
-                        Append_Click(new Button { Content = "%" }, null);
-                        e.Handled = true;
-                    }
-                    break;
-                case Key.D6:
-                    if (e.KeyboardDevice.IsKeyDown(Key.LeftShift) || e.KeyboardDevice.IsKeyDown(Key.RightShift))
-                    {
-                        Append_Click(new Button { Content = "^" }, null);
-                        e.Handled = true;
-                    }
-                    break;
             }
         }
 
@@ -533,12 +509,9 @@ namespace CalculatorApp
             {
                 if (disposing)
                 {
-                    // Освобождаем управляемые ресурсы
                     if (_expressionParser.IsValueCreated)
                         _expressionParser.Value.Dispose();
                 }
-
-                // Освобождаем неуправляемые ресурсы (если есть)
 
                 _disposed = true;
             }
