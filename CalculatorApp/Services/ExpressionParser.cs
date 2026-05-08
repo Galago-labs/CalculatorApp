@@ -65,9 +65,12 @@ namespace CalculatorApp.Services
                 if (_computationCache.Count >= CalculatorConfiguration.Instance.MaxCacheSize)
                 {
                     // Remove least recently used entry
-                    string lruKey = _cacheOrder.Last.Value;
-                    _cacheOrder.RemoveLast();
-                    _computationCache.Remove(lruKey);
+                    if (_cacheOrder.Last != null)
+                    {
+                        string lruKey = _cacheOrder.Last.Value;
+                        _cacheOrder.RemoveLast();
+                        _computationCache.Remove(lruKey);
+                    }
                 }
                 _computationCache[expression] = result;
                 _cacheOrder.AddFirst(expression);
