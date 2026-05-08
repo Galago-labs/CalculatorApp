@@ -11,7 +11,7 @@ namespace CalculatorApp.Services
         private double _memoryValue = 0;
         private bool _isMemoryActive = false;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public IReadOnlyList<string> CalculationHistory => _calculationHistory;
         public int HistoryIndex 
